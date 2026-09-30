@@ -2,6 +2,7 @@
 
 import io
 import re
+import time
 
 import requests
 from pypdf import PdfReader
@@ -26,9 +27,16 @@ class UnparsedStatement(ValueError):
     pass
 
 
-def fetch(url: str) -> bytes:
-    response = requests.get(url, headers={"User-Agent": "fund-performance-attribution"}, timeout=120)
-    response.raise_for_status()
+def fetch(url: str, attempts: int = 4) -> bytes:
+    for attempt in range(1, attempts + 1):
+        try:
+            response = requests.get(url, headers={"User-Agent": "fund-performance-attribution"}, timeout=120)
+            response.raise_for_status()
+            break
+        except requests.ConnectionError:  # Satrix's server resets some connections from cloud runners
+            if attempt == attempts:
+                raise
+            time.sleep(15 * attempt)
     if not response.content.startswith(b"%PDF"):
         raise UnparsedStatement(f"{url} did not return a PDF")
     return response.content

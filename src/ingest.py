@@ -2,6 +2,7 @@
 
 import argparse
 import sys
+import time
 from datetime import datetime
 
 from src import config, landing
@@ -54,6 +55,8 @@ def land_satrix(snapshot_date: str, refetch: bool, now: datetime) -> dict:
             skipped += 1
             continue
         url = settings["url"].format(media_id=statement["media_id"])
+        if landed:
+            time.sleep(10)  # one document at a time, spaced out
         payload = satrix.fetch(url)
         landing.write("satrix", year_end, "statement.pdf.gz", payload, {
             "url": url,
