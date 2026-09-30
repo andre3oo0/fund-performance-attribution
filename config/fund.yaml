@@ -44,3 +44,6 @@ assumptions:
   dividends: recognised on the ex-date; cash received five trading days later
   dividend_withholding_tax: none at fund level; withheld from investors on distribution (docs/sources.md)
   cash_return: 91-day Treasury bill tender rate, SARB series MMRD203A
+  # Added 30 Sep 2026, before any return code: the data rules for members whose JSE prices are missing
+  prices_before_jse_series: from the primary foreign listing, in rand at Yahoo's daily exchange rate, for returns only (Richemont from Zurich to 18 Apr 2023, BHP Group plc from London to 28 Jan 2022)
+  unpriced_member: a member with no JSE or foreign-listing price cannot be ranked and is not eligible (MultiChoice); its benchmark weight is reported as a gap in the rebuilt benchmark

@@ -40,7 +40,10 @@ rand. Comparing Satrix's year-end prices with Yahoo's showed two more problems:
   a holding valued from Yahoo's old prices would be wrong, so the benchmark's weights are taken from
   Satrix's rand values instead.
 - **Some members have no Yahoo history for part of the period**, including Richemont before April 2023,
-  16% of the index at the end of 2021.
+  16% of the index at the end of 2021. Richemont and BHP are filled from their Zurich and London listings,
+  converted to rand and checked against Satrix's own year-end prices: BHP tracks within a point, while
+  Richemont's 2021 return comes out 5 points short, because its JSE line moved from a discount to a
+  premium over the Swiss share that year.
 
 Every fact the fund's rules rely on is checked against a primary source in [docs/sources.md](docs/sources.md).
 

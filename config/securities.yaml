@@ -2,6 +2,8 @@
 # icb_industry: proven for 2021 to 2025 by matching Satrix's rand industry totals exactly (docs/sources.md).
 # satrix_names: the name in the statements; from/to limit a name to the year-ends it applies to.
 # No vendor_symbol: Yahoo returns no prices for the code, so the security cannot be priced from Yahoo.
+# proxy: the foreign listing and exchange rate standing in until a date, for returns only; compare_with is the
+# JSE series its returns are checked against where both exist (docs/data.md).
 
 securities:
   - { security_id: ABG, vendor_symbol: ABG.JO, name: Absa Group, icb_industry: Financials, satrix_names: [{ name: ABSA Group Ltd }] }
@@ -10,7 +12,8 @@ securities:
   - { security_id: ANH, vendor_symbol: ANH.JO, name: Anheuser-Busch InBev, icb_industry: Consumer Staples, satrix_names: [{ name: Anheuser-Busch InBev }] }
   - { security_id: APN, vendor_symbol: APN.JO, name: Aspen Pharmacare, icb_industry: Health Care, satrix_names: [{ name: Aspen Ltd }] }
   - { security_id: BHP, name: BHP Group plc, icb_industry: Basic Materials, satrix_names: [{ name: BHP Group plc, to: 2021 }],
-      note: "JSE line of BHP Group plc until BHP unified its listings in January 2022 (unverified); no Yahoo prices" }
+      proxy: { instrument: BHP_L, fx: GBPZAR, until: 2022-01-28, compare_with: BHG },
+      note: "JSE line of BHP Group plc until BHP unified its listings in January 2022 (unverified); no Yahoo prices, so priced from London" }
   - { security_id: BHG, vendor_symbol: BHG.JO, name: BHP Group, icb_industry: Basic Materials, satrix_names: [{ name: BHP Group plc, from: 2022 }],
       note: "Satrix still prints BHP Group plc after unification; Yahoo prices start 31 Jan 2022" }
   - { security_id: BID, vendor_symbol: BID.JO, name: Bid Corporation, icb_industry: Consumer Staples, satrix_names: [{ name: BID Corporation Ltd }] }
@@ -19,7 +22,8 @@ securities:
   - { security_id: CPI, vendor_symbol: CPI.JO, name: Capitec Bank, icb_industry: Financials, satrix_names: [{ name: Capitec Bank Holdings Ltd }] }
   - { security_id: CLS, vendor_symbol: CLS.JO, name: Clicks Group, icb_industry: Consumer Staples, satrix_names: [{ name: Clicks Group Ltd }] }
   - { security_id: CFR, vendor_symbol: CFR.JO, name: Richemont, icb_industry: Consumer Discretionary, satrix_names: [{ name: Compagnie Fin Richemont Ltd }],
-      note: "Yahoo prices start 19 Apr 2023; Satrix's share count fell from 7.9 million to 0.1 million over the period, so the JSE instrument changed (unverified)" }
+      proxy: { instrument: CFR_SW, fx: CHFZAR, until: 2023-04-18, compare_with: CFR },
+      note: "Yahoo prices start 19 Apr 2023; Satrix's share count fell from 7.9 million to 0.1 million over the period, so the JSE instrument changed (unverified). Priced from Zurich before then" }
   - { security_id: DSY, vendor_symbol: DSY.JO, name: Discovery, icb_industry: Financials, satrix_names: [{ name: Discovery Ltd }] }
   - { security_id: EXX, vendor_symbol: EXX.JO, name: Exxaro Resources, icb_industry: Energy, satrix_names: [{ name: Exxaro Resources Ltd }] }
   - { security_id: FSR, vendor_symbol: FSR.JO, name: FirstRand, icb_industry: Financials, satrix_names: [{ name: FirstRand Ltd }] }

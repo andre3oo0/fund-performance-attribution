@@ -18,6 +18,7 @@ CHECKS = [
     ("dq_statement_industry", "ICB industry totals that differ from Satrix's (2021 onwards)"),
     ("dq_statement_restated", "Year-end holdings printed differently in two statements"),
     ("dq_statement_price", "Satrix year-end prices that Yahoo's close does not match"),
+    ("dq_proxy_year_end", "Foreign-listing returns in rand more than 2 points from Satrix's, year-end to year-end"),
 ]
 
 

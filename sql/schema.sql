@@ -1,5 +1,5 @@
 -- Raw layer: what each landed file said, loaded unchanged; everything else is derived from it.
-PRAGMA user_version = 2;
+PRAGMA user_version = 3;
 
 CREATE TABLE IF NOT EXISTS ingest_run (
     run_id          TEXT PRIMARY KEY,
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS instrument (
     security_id     TEXT PRIMARY KEY,
     vendor_symbol   TEXT NOT NULL UNIQUE,
     name            TEXT NOT NULL,
-    role            TEXT NOT NULL CHECK (role IN ('benchmark', 'index', 'share'))
+    role            TEXT NOT NULL CHECK (role IN ('benchmark', 'index', 'share', 'proxy', 'fx'))
 );
 
 -- No primary key: a vendor's duplicate rows must reach the checks, not vanish on load
@@ -62,6 +62,15 @@ CREATE TABLE IF NOT EXISTS security (
     vendor_symbol   TEXT,
     icb_industry    TEXT NOT NULL,
     note            TEXT
+);
+
+-- A foreign listing that stands in for a JSE series before it begins, converted to rand; returns only
+CREATE TABLE IF NOT EXISTS security_proxy (
+    security_id     TEXT PRIMARY KEY REFERENCES security (security_id),
+    proxy_id        TEXT NOT NULL REFERENCES instrument (security_id),
+    fx_id           TEXT NOT NULL REFERENCES instrument (security_id),
+    until_date      TEXT NOT NULL,
+    compare_with    TEXT NOT NULL REFERENCES instrument (security_id)
 );
 
 CREATE TABLE IF NOT EXISTS security_alias (

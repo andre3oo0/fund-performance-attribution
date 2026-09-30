@@ -23,11 +23,15 @@ def load_securities(conn: sqlite3.Connection) -> None:
                for s in listed for a in s["satrix_names"]]
     with conn:
         conn.execute("DELETE FROM security_alias")
+        conn.execute("DELETE FROM security_proxy")
         conn.execute("DELETE FROM security")
         conn.executemany("INSERT INTO security VALUES (?, ?, ?, ?, ?)",
                          [(s["security_id"], s["name"], s.get("vendor_symbol"), s["icb_industry"], s.get("note"))
                           for s in listed])
         conn.executemany("INSERT INTO security_alias VALUES (?, ?, ?, ?)", aliases)
+        conn.executemany("INSERT INTO security_proxy VALUES (?, ?, ?, ?, ?)",
+                         [(s["security_id"], s["proxy"]["instrument"], s["proxy"]["fx"], str(s["proxy"]["until"]),
+                           s["proxy"]["compare_with"]) for s in listed if s.get("proxy")])
 
 
 def load_statement(conn: sqlite3.Connection, payload: bytes, run_id: str) -> int:

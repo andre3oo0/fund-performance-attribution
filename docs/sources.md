@@ -9,6 +9,7 @@ Every fact the fund's rules or the measurement depend on, with where it was chec
 |---|---|---|
 | Benchmark: Satrix 40 (STX40) closes and distributions | Yahoo Finance, `STX40.JO`, landed daily from 1 Dec 2020 | Prices in cents (Yahoo reports `ZAc`). Adjusted close does **not** include distributions, so it is not used |
 | FTSE/JSE Top 40 price index | Yahoo Finance, `^J200.JO` | Index points, no dividends; a cross-check only |
+| Stand-ins for missing JSE history | Yahoo Finance: `CFR.SW` (Richemont, SIX, francs), `BHP.L` (BHP, LSE, pence), `CHFZAR=X`, `GBPZAR=X` | Returns only, until each JSE series begins; checked against Satrix's year-end prices ([data](data.md)) |
 | Risk-free rate: 91-day Treasury bill tender rate | SARB web API, series `MMRD203A`: `custom.resbank.co.za/SarbWebApi/WebIndicators/Shared/GetTimeseriesObservations/MMRD203A/{from}/{to}` | Published for each trading day; the tender itself is weekly |
 | Satrix 40 costs | Satrix minimum disclosure document, 31 Aug 2026: https://satrix.co.za/fund/mdd/STX40 | TER 0.10% (one and three years); management fee 0.09%, transaction costs 0.03% |
 

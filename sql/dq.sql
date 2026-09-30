@@ -24,7 +24,7 @@ CREATE VIEW dq_closed_day_bar AS
 SELECT p.security_id, p.price_date, p.close_reported, c.reason
 FROM stg_price p
 LEFT JOIN trading_calendar c ON c.cal_date = p.price_date
-WHERE p.is_trading_day = 0;
+WHERE p.is_trading_day = 0 AND p.role NOT IN ('proxy', 'fx');  -- foreign markets keep their own calendars
 
 -- Trading days inside a series' own date range with no bar
 DROP VIEW IF EXISTS dq_missing_session;
@@ -32,6 +32,7 @@ CREATE VIEW dq_missing_session AS
 WITH span AS (
     SELECT security_id, MIN(price_date) AS first_date, MAX(price_date) AS last_date
     FROM stg_price
+    WHERE role NOT IN ('proxy', 'fx')  -- their gaps on JSE days are carried and flagged in stg_proxy_price
     GROUP BY 1
 )
 SELECT s.security_id, c.cal_date AS missing_date
@@ -132,3 +133,58 @@ FROM stg_benchmark_holding h
 JOIN last_day d ON d.year = CAST(h.as_at_year AS TEXT)
 LEFT JOIN stg_price p ON p.security_id = h.security_id AND p.price_date = d.price_date
 WHERE p.close_value IS NULL OR ABS(p.close_value / h.price_zar - 1) > 0.001;
+
+-- A proxy's rand return between two Satrix year-ends against Satrix's own prices; 2% allows for closing-time differences
+DROP VIEW IF EXISTS v_proxy_year_end;
+CREATE VIEW v_proxy_year_end AS
+WITH ends AS (
+    SELECT h.security_id, h.as_at_year, h.price_zar,
+           (SELECT MAX(price_date) FROM stg_proxy_price x WHERE x.security_id = h.security_id
+             AND x.price_date <= h.as_at_date) AS price_date
+    FROM stg_benchmark_holding h
+    JOIN security_proxy sp ON sp.security_id = h.security_id
+    WHERE (SELECT MAX(cal_date) FROM trading_calendar WHERE is_trading_day = 1 AND cal_date <= h.as_at_date) <= sp.until_date
+),
+priced AS (
+    SELECT e.*, x.close_zar FROM ends e JOIN stg_proxy_price x USING (security_id, price_date)
+)
+SELECT b.security_id, a.as_at_year AS from_year, b.as_at_year AS to_year,
+       b.price_zar / a.price_zar - 1 AS satrix_return, b.close_zar / a.close_zar - 1 AS proxy_return,
+       (b.close_zar / a.close_zar) - (b.price_zar / a.price_zar) AS difference
+FROM priced a
+JOIN priced b ON b.security_id = a.security_id AND b.as_at_year = a.as_at_year + 1;
+
+DROP VIEW IF EXISTS dq_proxy_year_end;
+CREATE VIEW dq_proxy_year_end AS
+SELECT * FROM v_proxy_year_end WHERE ABS(difference) > 0.02;
+
+-- Where the JSE series and the proxy both exist, their monthly returns side by side: the evidence the proxy tracks
+DROP VIEW IF EXISTS v_proxy_overlap;
+CREATE VIEW v_proxy_overlap AS
+WITH month_end AS (
+    SELECT sp.security_id, substr(c.cal_date, 1, 7) AS month, MAX(c.cal_date) AS price_date
+    FROM security_proxy sp
+    JOIN trading_calendar c ON c.is_trading_day = 1
+    GROUP BY 1, 2
+),
+both_prices AS (
+    SELECT m.security_id, m.month, m.price_date, j.close_value AS jse_zar,
+           (SELECT p.close_value * f.close_value
+            FROM stg_price p, stg_price f
+            WHERE p.security_id = sp.proxy_id AND f.security_id = sp.fx_id
+              AND p.price_date = (SELECT MAX(price_date) FROM stg_price WHERE security_id = sp.proxy_id AND price_date <= m.price_date)
+              AND f.price_date = (SELECT MAX(price_date) FROM stg_price WHERE security_id = sp.fx_id AND price_date <= m.price_date)) AS proxy_zar
+    FROM month_end m
+    JOIN security_proxy sp ON sp.security_id = m.security_id
+    JOIN stg_price j ON j.security_id = sp.compare_with AND j.price_date = m.price_date
+),
+returns AS (
+    SELECT security_id, month,
+           jse_zar / LAG(jse_zar) OVER w - 1 AS jse_return,
+           proxy_zar / LAG(proxy_zar) OVER w - 1 AS proxy_return
+    FROM both_prices
+    WINDOW w AS (PARTITION BY security_id ORDER BY month)
+)
+SELECT security_id, month, jse_return, proxy_return, proxy_return - jse_return AS difference
+FROM returns
+WHERE jse_return IS NOT NULL;

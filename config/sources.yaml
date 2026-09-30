@@ -6,6 +6,11 @@ yahoo:
   instruments:
     - { security_id: STX40, vendor_symbol: STX40.JO, role: benchmark, name: Satrix 40 }
     - { security_id: J200, vendor_symbol: ^J200.JO, role: index, name: FTSE/JSE Top 40 price index }
+    # Foreign listings and exchange rates for members whose JSE prices Yahoo lacks (config/securities.yaml, proxy)
+    - { security_id: CFR_SW, vendor_symbol: CFR.SW, role: proxy, name: Richemont on SIX Swiss Exchange }
+    - { security_id: BHP_L, vendor_symbol: BHP.L, role: proxy, name: BHP Group on the London Stock Exchange }
+    - { security_id: CHFZAR, vendor_symbol: CHFZAR=X, role: fx, name: Swiss franc in rand }
+    - { security_id: GBPZAR, vendor_symbol: GBPZAR=X, role: fx, name: Pound sterling in rand }
 
 sarb:
   series: MMRD203A  # Treasury bills, 91 day, tender rates

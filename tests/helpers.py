@@ -15,13 +15,16 @@ TEST_INSTRUMENTS = [
     {"security_id": "FUND", "vendor_symbol": "FUND.JO", "role": "benchmark", "name": "Test fund"},
     {"security_id": "IDX", "vendor_symbol": "^IDX.JO", "role": "index", "name": "Test index"},
     {"security_id": "SHR", "vendor_symbol": "SHR.JO", "role": "share", "name": "Test share"},
+    {"security_id": "RET_SW", "vendor_symbol": "RET.SW", "role": "proxy", "name": "Retailer abroad"},
+    {"security_id": "CHFZAR", "vendor_symbol": "CHFZAR=X", "role": "fx", "name": "Swiss franc in rand"},
 ]
 TEST_SECURITIES = [
     {"security_id": "SHR", "vendor_symbol": "SHR.JO", "name": "Test share", "icb_industry": "Financials",
      "satrix_names": [{"name": "Share Holdings Ltd"}]},
     {"security_id": "OLD", "name": "Old line", "icb_industry": "Basic Materials", "satrix_names": [{"name": "Mining plc", "to": 2021}]},
     {"security_id": "NEW", "name": "New line", "icb_industry": "Basic Materials", "satrix_names": [{"name": "Mining plc", "from": 2022}]},
-    {"security_id": "RET", "name": "Retailer", "icb_industry": "Consumer Discretionary", "satrix_names": [{"name": "Retail Group Ltd"}]},
+    {"security_id": "RET", "name": "Retailer", "icb_industry": "Consumer Discretionary", "satrix_names": [{"name": "Retail Group Ltd"}],
+     "proxy": {"instrument": "RET_SW", "fx": "CHFZAR", "until": "2022-12-30", "compare_with": "SHR"}},
 ]
 EVENING = datetime(2022, 12, 30, 19, 0, tzinfo=landing.SAST)
 HEADER = "vendor_symbol,price_date,open,high,low,close,adj_close,volume,dividends,splits,reported_unit"
