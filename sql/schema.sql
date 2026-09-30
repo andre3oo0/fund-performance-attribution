@@ -1,5 +1,5 @@
 -- Raw layer: what each landed file said, loaded unchanged; everything else is derived from it.
-PRAGMA user_version = 3;
+PRAGMA user_version = 4;
 
 CREATE TABLE IF NOT EXISTS ingest_run (
     run_id          TEXT PRIMARY KEY,
@@ -73,6 +73,16 @@ CREATE TABLE IF NOT EXISTS security_proxy (
     compare_with    TEXT NOT NULL REFERENCES instrument (security_id)
 );
 
+CREATE TABLE IF NOT EXISTS security_code (
+    code            TEXT PRIMARY KEY,
+    security_id     TEXT NOT NULL REFERENCES security (security_id)
+);
+
+-- Quarter-end months of the Top 40 reviews a notice is expected for, from config/sources.yaml
+CREATE TABLE IF NOT EXISTS expected_review (
+    review_month    TEXT PRIMARY KEY
+);
+
 CREATE TABLE IF NOT EXISTS security_alias (
     satrix_name     TEXT NOT NULL,
     security_id     TEXT NOT NULL REFERENCES security (security_id),
@@ -104,6 +114,26 @@ CREATE TABLE IF NOT EXISTS raw_statement_industry (
     as_at_year      INTEGER NOT NULL,
     industry_printed TEXT NOT NULL,
     fair_value_zar  REAL NOT NULL,
+    run_id          TEXT NOT NULL
+);
+
+-- Satrix 40 rebalancing notices as printed: every constituent's weight before and after the review
+CREATE TABLE IF NOT EXISTS raw_notice (
+    sens_id         TEXT NOT NULL,
+    sens_date       TEXT NOT NULL,
+    effective_date  TEXT NOT NULL,
+    applied_after   TEXT,
+    printed_previous REAL NOT NULL,
+    printed_new     REAL NOT NULL,
+    run_id          TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS raw_notice_weight (
+    sens_id         TEXT NOT NULL,
+    code            TEXT NOT NULL,
+    name_printed    TEXT NOT NULL,
+    previous_weight REAL NOT NULL,
+    new_weight      REAL NOT NULL,
     run_id          TEXT NOT NULL
 );
 

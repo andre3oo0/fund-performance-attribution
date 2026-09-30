@@ -7,7 +7,7 @@ import sys
 import pandas as pd
 
 from src import config, db, landing, trading_calendar
-from src.sources import sarb, satrix, yahoo
+from src.sources import sarb, satrix, satrix_sens, yahoo
 
 
 def load_instruments(conn: sqlite3.Connection) -> None:
@@ -23,15 +23,41 @@ def load_securities(conn: sqlite3.Connection) -> None:
                for s in listed for a in s["satrix_names"]]
     with conn:
         conn.execute("DELETE FROM security_alias")
+        conn.execute("DELETE FROM security_code")
+        conn.execute("DELETE FROM expected_review")
         conn.execute("DELETE FROM security_proxy")
         conn.execute("DELETE FROM security")
         conn.executemany("INSERT INTO security VALUES (?, ?, ?, ?, ?)",
                          [(s["security_id"], s["name"], s.get("vendor_symbol"), s["icb_industry"], s.get("note"))
                           for s in listed])
         conn.executemany("INSERT INTO security_alias VALUES (?, ?, ?, ?)", aliases)
+        conn.executemany("INSERT INTO security_code VALUES (?, ?)",
+                         [(c, s["security_id"]) for s in listed for c in s.get("jse_codes", [s["security_id"]])])
+        conn.executemany("INSERT INTO expected_review VALUES (?)", [(m,) for m in review_months()])
         conn.executemany("INSERT INTO security_proxy VALUES (?, ?, ?, ?, ?)",
                          [(s["security_id"], s["proxy"]["instrument"], s["proxy"]["fx"], str(s["proxy"]["until"]),
                            s["proxy"]["compare_with"]) for s in listed if s.get("proxy")])
+
+
+def review_months() -> list[str]:
+    settings = config.sources()["satrix_sens"]
+    year, month = map(int, str(settings["first_review"]).split("-"))
+    last, months = str(settings["last_review"]), []
+    while f"{year}-{month:02d}" <= last:
+        months.append(f"{year}-{month:02d}")
+        year, month = (year + 1, 3) if month == 12 else (year, month + 3)
+    return months
+
+
+def load_notice(conn: sqlite3.Connection, payload: bytes, manifest: dict) -> int:
+    notice = satrix_sens.parse(payload)
+    sens_id, run_id = manifest["sens_id"], manifest["run_id"]
+    conn.execute("INSERT INTO raw_notice VALUES (?, ?, ?, ?, ?, ?, ?)",
+                 (sens_id, manifest["sens_date"], notice["effective_date"], notice["applied_after"],
+                  *notice["printed_totals"], run_id))
+    conn.executemany("INSERT INTO raw_notice_weight VALUES (?, ?, ?, ?, ?, ?)",
+                     [(sens_id, c["code"], c["name"], c["previous"], c["new"], run_id) for c in notice["constituents"]])
+    return len(notice["constituents"])
 
 
 def load_statement(conn: sqlite3.Connection, payload: bytes, run_id: str) -> int:
@@ -78,6 +104,8 @@ def load_file(conn: sqlite3.Connection, manifest_path) -> int:
             conn.executemany("INSERT INTO raw_rate VALUES (?, ?, ?, ?, ?, ?)",
                              [(source, snap, manifest["series"], o["period"], o["value"], run_id) for o in obs])
             rows = len(obs)
+        elif source == "satrix_sens":
+            rows = load_notice(conn, payload, manifest)
         elif source == "satrix":
             rows = load_statement(conn, payload, run_id)
         else:

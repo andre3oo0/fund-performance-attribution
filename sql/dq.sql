@@ -188,3 +188,76 @@ returns AS (
 SELECT security_id, month, jse_return, proxy_return, proxy_return - jse_return AS difference
 FROM returns
 WHERE jse_return IS NOT NULL;
+
+-- Satrix 40 notice checks; weights are printed to 0.01%, so 0.1 points allows for rounding
+DROP VIEW IF EXISTS dq_notice_unmapped;
+CREATE VIEW dq_notice_unmapped AS
+SELECT sens_id, effective_date, code, name_printed, new_weight
+FROM stg_notice_weight
+WHERE security_id IS NULL;
+
+DROP VIEW IF EXISTS dq_notice_total;
+CREATE VIEW dq_notice_total AS
+SELECT n.sens_id, n.effective_date, n.printed_previous, SUM(w.previous_weight) AS rows_previous,
+       n.printed_new, SUM(w.new_weight) AS rows_new
+FROM raw_notice n
+JOIN raw_notice_weight w USING (sens_id)
+GROUP BY 1, 2, 3, 5
+HAVING ABS(SUM(w.new_weight) - n.printed_new) > 0.001 OR ABS(SUM(w.previous_weight) - n.printed_previous) > 0.001
+    OR ABS(n.printed_new - 1) > 0.001;
+
+-- Two notices for the same review, or a quarter with none
+DROP VIEW IF EXISTS dq_notice_coverage;
+CREATE VIEW dq_notice_coverage AS
+SELECT e.review_month, COUNT(n.sens_id) AS notices,
+       CASE WHEN COUNT(n.sens_id) = 0 THEN 'missing' ELSE 'duplicate' END AS problem
+FROM expected_review e
+LEFT JOIN raw_notice n ON substr(n.effective_date, 1, 7) = e.review_month
+GROUP BY 1
+HAVING COUNT(n.sens_id) <> 1;
+
+-- A notice's "previous" members must be the last notice's new members; a difference means a missing notice or an event between reviews
+DROP VIEW IF EXISTS dq_notice_membership;
+CREATE VIEW dq_notice_membership AS
+WITH ordered AS (
+    SELECT sens_id, effective_date, LAG(sens_id) OVER (ORDER BY effective_date) AS prior_id
+    FROM raw_notice
+),
+weights AS (
+    SELECT sens_id, code, COALESCE(security_id, code) AS member, previous_weight, new_weight FROM stg_notice_weight
+),
+before AS (
+    SELECT o.sens_id, o.effective_date, w.code, w.member FROM ordered o JOIN weights w ON w.sens_id = o.sens_id
+    WHERE w.previous_weight > 0 AND o.prior_id IS NOT NULL
+),
+prior_after AS (
+    SELECT o.sens_id, o.effective_date, w.code, w.member FROM ordered o JOIN weights w ON w.sens_id = o.prior_id
+    WHERE w.new_weight > 0
+)
+SELECT sens_id, effective_date, code, 'in this notice only' AS problem FROM before
+WHERE (sens_id, member) NOT IN (SELECT sens_id, member FROM prior_after)
+UNION ALL
+SELECT sens_id, effective_date, code, 'in the last notice only' FROM prior_after
+WHERE (sens_id, member) NOT IN (SELECT sens_id, member FROM before);
+
+-- Members at each year-end per the last notice before it, against Satrix's audited holdings at that year-end
+DROP VIEW IF EXISTS dq_notice_year_end;
+CREATE VIEW dq_notice_year_end AS
+WITH last_notice AS (
+    SELECT h.as_at_year,
+           (SELECT sens_id FROM raw_notice WHERE effective_date <= h.as_at_date ORDER BY effective_date DESC LIMIT 1) AS sens_id
+    FROM (SELECT DISTINCT as_at_year, as_at_date FROM stg_benchmark_holding) h
+),
+notice_members AS (
+    SELECT l.as_at_year, w.security_id FROM last_notice l JOIN stg_notice_weight w ON w.sens_id = l.sens_id
+    WHERE w.new_weight > 0
+),
+audited AS (
+    SELECT h.as_at_year, h.security_id FROM stg_benchmark_holding h
+    WHERE h.as_at_year IN (SELECT as_at_year FROM last_notice WHERE sens_id IS NOT NULL)
+)
+SELECT as_at_year, security_id, 'in the notice only' AS problem FROM notice_members
+WHERE (as_at_year, security_id) NOT IN (SELECT as_at_year, security_id FROM audited)
+UNION ALL
+SELECT as_at_year, security_id, 'in the audited holdings only' FROM audited
+WHERE (as_at_year, security_id) NOT IN (SELECT as_at_year, security_id FROM notice_members);

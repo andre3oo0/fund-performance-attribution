@@ -60,6 +60,11 @@ uses the data decides what to do with each, and says so.
 | Restated holding | The same year-end printed with different shares or value in two statements |
 | Year-end price | Satrix's year-end price against Yahoo's close on the last trading day of the year (0.1% allowed), or no Yahoo price at all |
 | Stand-in return | A foreign listing's rand return between two Satrix year-ends more than 2 points from Satrix's own prices |
+| Notice code | A code in a Satrix 40 notice with no security mapped |
+| Notice total | A notice's weights that do not add up to its printed totals (0.1 points allowed), or totals other than 100% |
+| Notice coverage | A quarterly review from March 2022 with no Satrix 40 notice, or more than one |
+| Notice membership | A member in one notice's "previous" list that is not in the last notice's new list, or the reverse |
+| Notice year-end | Members at a year-end per the last notice before it that differ from Satrix's audited holdings |
 
 The tests plant each error and check it is found, and plant traps that must not raise an alarm: a quarterly
 distribution of a repeated amount, a share split, a public holiday, four frozen sessions, a weekend in the
@@ -142,3 +147,22 @@ affects only the first momentum ranking, and it is reported, not corrected.
 
 Foreign dividends are converted gross. Richemont's are paid after 35% Swiss withholding tax (to be
 verified), so the total-return step must not count the gross amount for the benchmark.
+
+## Quarterly changes: Satrix 40's rebalancing notices
+
+Each quarterly Top 40 review, Satrix publishes a SENS notice listing every constituent with its weight
+before and after, and the date the change took effect. These give the point-in-time membership (which
+shares the fund may hold at each rebalance) and the benchmark's weights between year-ends.
+
+The JSE's SENS site blocks scripts with a bot-detection challenge, which this project does not work around,
+and the free mirrors either limit history to subscribers or forbid storing their pages. So the notices are
+saved by hand from the JSE's site and landed unchanged from that folder:
+
+```bash
+python -m src.ingest --notices path/to/saved/notices
+```
+
+Only files headed "JSE Code: STX40" are landed, under their SENS date and number; notices for other Satrix
+funds from the same day are reported and left out. Each manifest records the JSE link and that the file was
+saved by hand. Two independent primary sources then check each other: the members the notices give at each
+year-end must be the members in Satrix's audited financial statements.

@@ -2,6 +2,7 @@
 # icb_industry: proven for 2021 to 2025 by matching Satrix's rand industry totals exactly (docs/sources.md).
 # satrix_names: the name in the statements; from/to limit a name to the year-ends it applies to.
 # No vendor_symbol: Yahoo returns no prices for the code, so the security cannot be priced from Yahoo.
+# jse_codes: every code SENS notices use for it, where not just security_id.
 # proxy: the foreign listing and exchange rate standing in until a date, for returns only; compare_with is the
 # JSE series its returns are checked against where both exist (docs/data.md).
 
@@ -58,7 +59,7 @@ securities:
   - { security_id: SSW, vendor_symbol: SSW.JO, name: Sibanye-Stillwater, icb_industry: Basic Materials, satrix_names: [{ name: Sibanye Still Water Ltd }] }
   - { security_id: SBK, vendor_symbol: SBK.JO, name: Standard Bank Group, icb_industry: Financials, satrix_names: [{ name: Standard Bank Group Ltd }] }
   - { security_id: SPP, vendor_symbol: SPP.JO, name: SPAR Group, icb_industry: Consumer Staples, satrix_names: [{ name: The Spar Group }] }
-  - { security_id: VAL, vendor_symbol: VAL.JO, name: Valterra Platinum, icb_industry: Basic Materials,
+  - { security_id: VAL, vendor_symbol: VAL.JO, name: Valterra Platinum, icb_industry: Basic Materials, jse_codes: [AMS, VAL],
       satrix_names: [{ name: Anglo American Platinum Ltd, to: 2024 }, { name: Valterra Partners LLC, from: 2025 }],
       note: "Formerly Anglo American Platinum (AMS); Satrix's 2025 statement misnames it Valterra Partners LLC" }
   - { security_id: VOD, vendor_symbol: VOD.JO, name: Vodacom Group, icb_industry: Telecommunications, satrix_names: [{ name: Vodacom Group Ltd }] }

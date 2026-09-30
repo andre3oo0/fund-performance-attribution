@@ -4,9 +4,10 @@ import argparse
 import sys
 import time
 from datetime import datetime
+from pathlib import Path
 
 from src import config, landing
-from src.sources import sarb, satrix, yahoo
+from src.sources import sarb, satrix, satrix_sens, yahoo
 
 
 class IncompleteFetch(Exception):
@@ -68,6 +69,36 @@ def land_satrix(snapshot_date: str, refetch: bool, now: datetime) -> dict:
     return {"rows": landed, "session_cutoff": f"not applicable; {skipped} statements already landed"}
 
 
+def land_satrix_sens(folder: Path, refetch: bool, now: datetime) -> dict:
+    url = config.sources()["satrix_sens"]["url"]
+    landed, skipped, other = 0, 0, []
+    # Each saved PDF is landed unchanged under its SENS date and number; notices for other Satrix funds are left out
+    for path in sorted(folder.glob("*.pdf")):
+        sens_date, sens_id = satrix_sens.identify(path)
+        key = f"{sens_date}_{sens_id}"
+        if landing.landing_dir("satrix_sens", key).joinpath(landing.MANIFEST_FILE).exists() and not refetch:
+            skipped += 1
+            continue
+        payload = path.read_bytes()
+        try:
+            notice = satrix_sens.parse(payload)
+        except satrix_sens.NotSatrix40 as exc:
+            other.append(f"{path.name} ({exc})")
+            continue
+        landing.write("satrix_sens", key, "notice.pdf.gz", payload, {
+            "url": url.format(file=path.name),
+            "obtained": "saved by hand from the JSE's SENS site, which blocks scripts",
+            "sens_id": sens_id,
+            "sens_date": sens_date,
+            "effective_date": notice["effective_date"],
+            "rows": len(notice["constituents"]),
+        }, refetch=refetch, now=now)
+        landed += 1
+    for name in other:
+        print(f"  not landed, another fund's notice: {name}")
+    return {"rows": landed, "session_cutoff": f"not applicable; {skipped} notices already landed"}
+
+
 LANDERS = {"yahoo": land_yahoo, "sarb": land_sarb, "satrix": land_satrix}
 
 
@@ -77,7 +108,12 @@ def main(argv=None) -> int:
     p.add_argument("--source", action="append", choices=LANDERS, help="repeatable; default is every source")
     p.add_argument("--snapshot-date", default=now.date().isoformat())
     p.add_argument("--refetch", action="store_true", help="replace a snapshot already landed for this date")
+    p.add_argument("--notices", type=Path, help="folder of Satrix 40 SENS PDFs saved by hand; lands only those")
     args = p.parse_args(argv)
+    if args.notices:
+        manifest = land_satrix_sens(args.notices, args.refetch, now)
+        print(f"satrix_sens: {manifest['rows']} notices landed, {manifest['session_cutoff']}")
+        return 0
 
     failed = False
     for name in args.source or list(LANDERS):

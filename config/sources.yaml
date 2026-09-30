@@ -25,3 +25,9 @@ satrix:
     - { year_end: 2023-12-31, media_id: 88188 }
     - { year_end: 2024-12-31, media_id: 90845 }
     - { year_end: 2025-12-31, media_id: 92341 }
+
+# Satrix 40 rebalancing notices, one per quarterly Top 40 review; saved by hand, since the JSE's SENS site blocks scripts
+satrix_sens:
+  url: https://senspdf.jse.co.za/documents/{file}
+  first_review: 2022-03  # the first review after inception; Satrix's 2021 year-end holdings cover the start
+  last_review: 2026-09

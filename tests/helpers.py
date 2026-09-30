@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest import mock
 
 from src import config, db, landing, rebuild, trading_calendar
-from src.sources import satrix
+from src.sources import satrix, satrix_sens
 
 TEST_INSTRUMENTS = [
     {"security_id": "FUND", "vendor_symbol": "FUND.JO", "role": "benchmark", "name": "Test fund"},
@@ -23,7 +23,7 @@ TEST_SECURITIES = [
      "satrix_names": [{"name": "Share Holdings Ltd"}]},
     {"security_id": "OLD", "name": "Old line", "icb_industry": "Basic Materials", "satrix_names": [{"name": "Mining plc", "to": 2021}]},
     {"security_id": "NEW", "name": "New line", "icb_industry": "Basic Materials", "satrix_names": [{"name": "Mining plc", "from": 2022}]},
-    {"security_id": "RET", "name": "Retailer", "icb_industry": "Consumer Discretionary", "satrix_names": [{"name": "Retail Group Ltd"}],
+    {"security_id": "RET", "name": "Retailer", "icb_industry": "Consumer Discretionary", "satrix_names": [{"name": "Retail Group Ltd"}], "jse_codes": ["RTL", "RET"],
      "proxy": {"instrument": "RET_SW", "fx": "CHFZAR", "until": "2022-12-30", "compare_with": "SHR"}},
 ]
 EVENING = datetime(2022, 12, 30, 19, 0, tzinfo=landing.SAST)
@@ -50,6 +50,7 @@ class WarehouseTest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
         self.statements = {}
+        self.notices = {}
         self.addCleanup(shutil.rmtree, self.tmp, ignore_errors=True)
         for patch in (
             mock.patch.object(config, "LANDING_DIR", self.tmp / "landing"),
@@ -58,6 +59,7 @@ class WarehouseTest(unittest.TestCase):
             mock.patch.object(config, "instruments", lambda: TEST_INSTRUMENTS),
             mock.patch.object(config, "securities", lambda: TEST_SECURITIES),
             mock.patch.object(satrix, "extract", lambda pdf: self.statements[pdf]),
+            mock.patch.object(satrix_sens, "extract", lambda pdf: self.notices[pdf]),
         ):
             patch.start()
             self.addCleanup(patch.stop)
@@ -69,6 +71,16 @@ class WarehouseTest(unittest.TestCase):
     def land_rates(self, rows: list[tuple[str, float]], snapshot_date: str = "2022-12-30") -> None:
         landing.write("sarb", snapshot_date, "TEST.json.gz", rates_payload(rows),
                       {"series": "TEST", "rows": len(rows)}, now=EVENING)
+
+    def notice_pdf(self, text: str) -> bytes:
+        payload = f"%PDF synthetic notice {len(self.notices)}".encode()
+        self.notices[payload] = text
+        return payload
+
+    def land_notice(self, sens_date: str, sens_id: str, effective: str, rows: list) -> None:
+        payload = self.notice_pdf(notice_text(effective, rows))
+        landing.write("satrix_sens", f"{sens_date}_{sens_id}", "notice.pdf.gz", payload,
+                      {"sens_id": sens_id, "sens_date": sens_date, "rows": len(rows)}, now=EVENING)
 
     def land_statement(self, year: int, holdings: list, totals: dict, industries: dict) -> None:
         payload = f"%PDF synthetic statement {year}".encode()
@@ -121,3 +133,18 @@ def statement_text(year: int, holdings: list, totals: dict, industries: dict) ->
     plain = "\n".join([f"for the year ended 31 December {year}", *rows,
                         f"  {spaced(totals[year])}     {spaced(totals[year - 1])}", *lines])
     return plain, [layout]
+
+
+def notice_text(effective: str, rows: list, jse_code: str = "STX40", total: float | None = None) -> str:
+    # Mirrors a Satrix notice: rows of (code, name, previous %, new %), the totals, then the added and removed lists
+    day = date.fromisoformat(effective)
+    table = [f"{code:<9}{name:<38}{prev:>6.2f}%{new:>11.2f}%" for code, name, prev, new in rows]
+    added = [line for line, (_, _, prev, _) in zip(table, rows) if prev == 0]
+    return "\n".join([
+        "SATRIX COLLECTIVE INVESTMENT SCHEME", f"JSE Code: {jse_code}", "REBALANCING OF THE PORTFOLIO",
+        "Code     Share                                 Weight      Weight", *table,
+        f"{'':<47}{sum(r[2] for r in rows):>6.2f}%{total if total is not None else sum(r[3] for r in rows):>11.2f}%",
+        "The following constituents have been added:", *added,
+        "These changes were applied after the close of business on Friday,",
+        f"{(day - timedelta(days=3)).day} {(day - timedelta(days=3)):%B %Y} and are effective from Monday, {day.day} {day:%B %Y}.",
+    ])

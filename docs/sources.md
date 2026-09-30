@@ -53,7 +53,10 @@ match neither the record date nor the payment date: unexplained.
   `config/securities.yaml`. Two names change meaning over time: Satrix prints "BHP Group plc" both before
   BHP unified its listings in January 2022 and after (mapped to two codes by year, the date unverified),
   and its 2025 statement calls Valterra Platinum "Valterra Partners LLC".
-- Unresolved: the quarterly changes between year-ends, from Satrix's rebalance notices.
+- The quarterly changes between year-ends come from Satrix's rebalancing notices on SENS
+  (`senspdf.jse.co.za/documents/SENS_<date>_<number>.pdf`), saved by hand because the site blocks scripts
+  ([data](data.md)). Sharenet's free SENS history is limited to recent weeks without a subscription, and
+  ShareData's terms allow personal use only and forbid storing its pages, so neither is used.
 
 ## Sector classification (ICB)
 

@@ -129,3 +129,13 @@ SELECT m.security_id, m.price_date, m.proxy_id, m.proxy_date, p.currency, p.clos
 FROM matched m
 JOIN stg_price p ON p.security_id = m.proxy_id AND p.price_date = m.proxy_date
 JOIN stg_price f ON f.security_id = m.fx_id AND f.price_date = m.fx_date;
+
+-- Every constituent of every Satrix 40 notice, mapped to a security; the new weight holds from the effective date
+DROP TABLE IF EXISTS stg_notice_weight;
+CREATE TABLE stg_notice_weight AS
+SELECT n.sens_id, n.sens_date, n.effective_date, n.applied_after, w.code, w.name_printed, c.security_id, s.icb_industry,
+       w.previous_weight, w.new_weight
+FROM raw_notice n
+JOIN raw_notice_weight w USING (sens_id)
+LEFT JOIN security_code c ON c.code = w.code
+LEFT JOIN security s ON s.security_id = c.security_id;

@@ -31,10 +31,10 @@ def sha256(path: Path) -> str:
 
 
 def session_cutoff(snapshot_date: str, fetched: datetime) -> str:
-    snap = datetime.fromisoformat(snapshot_date).date()
+    snap = datetime.fromisoformat(snapshot_date[:10]).date()  # a document's key may add its number after the date
     local = fetched.astimezone(SAST)
     final = local.date() > snap or (local.date() == snap and local.time() >= SESSION_FINAL)
-    return snapshot_date if final else (snap - timedelta(days=1)).isoformat()
+    return snap.isoformat() if final else (snap - timedelta(days=1)).isoformat()
 
 
 def write(source: str, snapshot_date: str, filename: str, payload: bytes, details: dict,
