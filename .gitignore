@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+
+# Private price snapshots, cloned here when needed; never committed
+data/landing/
+
+# Derived and rebuildable
+data/*.db
+data/*.db-journal
+reports/*

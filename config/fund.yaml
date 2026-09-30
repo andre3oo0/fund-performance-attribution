@@ -1,0 +1,46 @@
+# Hadeda Equity Fund (fictional): synthetic mandate and rules, fixed before any return was computed; market data is real.
+
+fund:
+  name: Hadeda Equity Fund (fictional)
+  synthetic: true
+  type: South African general equity, long only, no borrowing, no derivatives
+  currency: ZAR
+  inception_date: 2022-01-03  # a Monday; to be confirmed as a JSE trading day
+  seed_capital_zar: 50000000
+  launch_unit_price_zar: 10.00
+
+benchmark:
+  name: FTSE/JSE Top 40, total return
+  measured_by: Satrix 40 (STX40), close plus distributions reinvested on the ex-date
+  cross_check: FTSE/JSE Top 40 price index (^J200 on Yahoo)
+
+universe:
+  rule: members of the FTSE/JSE Top 40 on the decision date  # point-in-time, so no survivorship bias
+  source: Satrix 40 quarterly rebalance notices on JSE SENS
+
+rules:
+  rebalance: quarterly, first trading day after each Top 40 quarterly review takes effect
+  ranking: 12-month price return excluding the latest month (momentum), from closes available on the decision date
+  holdings: 20
+  weighting: equal
+  cash_target: 0.03
+  cash_band: [0.01, 0.05]
+  subscriptions: invested pro rata to current weights
+  redemptions: funded by selling pro rata to current weights
+  cash_rebalance: month-end only, back into the band
+  max_single_share: 0.10  # trimmed at the next rebalance; every breach is logged (to be checked against CISCA limits)
+
+costs:
+  management_fee_annual: 0.0100  # accrued daily on NAV, paid monthly
+  trading_cost_rate: 0.0035  # brokerage and costs on trade value; illustrative, not a real tariff
+
+investor_flows:
+  synthetic: true
+  frequency: monthly
+  seed: 20220103
+  includes_large_redemption: true  # makes the gap between time- and money-weighted return visible
+
+assumptions:
+  dividends: recognised on the ex-date; cash received five trading days later
+  dividend_withholding_tax: to be verified for a unit trust before use
+  cash_return: 91-day Treasury bill tender rate, SARB series MMRD203A
