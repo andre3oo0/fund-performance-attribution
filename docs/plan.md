@@ -27,7 +27,7 @@ from the data once the fund's book is built; none are assumed here.
 | Fees | 1.00% a year management fee, accrued daily, paid monthly; brokerage and costs 0.35% of trade value (illustrative, as in project 1) |
 | Cash | Target 3%, band 1% to 5%; earns the 91-day T-bill rate (an assumption, stated) |
 | Investor flows | Synthetic monthly subscriptions and redemptions from a fixed seed, including one large redemption, so the gap between time-weighted and money-weighted return is visible |
-| Dividends | Real, from Yahoo's dividend column, recognised on the ex-date, cash received five trading days later (assumption, stated); dividend withholding tax treatment for a unit trust to be verified before use |
+| Dividends | Real, from Yahoo's dividend column, recognised on the ex-date, cash received five trading days later (assumption, stated); no dividends tax is withheld from the fund itself ([sources](sources.md)) |
 
 ### Investment rules, fixed before any result is computed
 
@@ -68,7 +68,7 @@ Each answer gives its evidence: figures, period and the query or tab it came fro
 | Are Yahoo's distributions clean? | **No.** Until October 2024 most distributions appear two or three times (for example 20.71c on 31 Dec 2021, 19 Jan and 24 Jan 2022); from 2025 once each. Summing them as received would overstate the benchmark | 33 dividend rows for about 19 quarters |
 | Satrix 40 against the price index | Price return 59.1% for STX40 against 56.4% for `^J200.JO`, 1 Dec 2021 to 28 Sep 2026; unexplained, to investigate | Same probe |
 | Risk-free rate | SARB publishes the 91-day T-bill tender rate (series `MMRD203A`) through a public web API, history from 3 Jan 2022, latest 6.93% on 28 Sep 2026 | `custom.resbank.co.za/SarbWebApi/WebIndicators/Shared/GetTimeseriesObservations/MMRD203A/{from}/{to}` |
-| Benchmark constituents and weights | Satrix publishes the full Top 40 constituent list with weights at each quarterly rebalance as a JSE SENS notice (for example 26 Sep 2024) | SENS PDFs return 403 to scripts from this laptop; retrieve by browser or from the runner (phase 0) |
+| Benchmark constituents and weights | Satrix announces each quarterly rebalance on SENS with full weights, and its annual financial statements list every holding at 31 December | The JSE's SENS PDF site is behind a bot-detection challenge, which is not worked around; see [sources](sources.md) for the route taken |
 | Fund name against the FSCA register | No match for "Hadeda" among CIS managers or schemes (local and foreign), in the full list of managers and portfolios (9,931 lines; control: "Satrix 40 Portfolio" found; 230 lines contain "Equity Fund"), or among FSPs (control: "Satrix" returns 2) | www2.fsca.co.za CIS search (`PRGNAME=Search_Mancos`), its "download all Manco's and Portfolios" list read in the browser, and the FSP search (`Search_FSP.htm`), via fsca.co.za Regulated Entities |
 | Project 1's landed Yahoo data | The 5-year backfill snapshot (29 Sep 2026) includes the `dividends` column for all 107 shares | Project 1's private snapshot of 29 Sep 2026 |
 
@@ -143,7 +143,7 @@ Planted errors the code must catch or get right:
 | 0a. Project 1 first | Move project 1's price snapshots, run logs and reports to a private repository, since the vendors' terms restrict republishing | Done 30 September 2026 |
 | 0b. Verify and decide | FSCA register check on the fund name; repository name; fetch Satrix SENS notices from Dec 2021 to Sep 2026; verify ICB sectors; check Satrix distributions against Yahoo; dividend tax treatment; confirm the inception date in the calendar | Each answer recorded with its source in `docs/sources.md`; plan finalised as `docs/plan.md` |
 | 1. Fund definition | Create this repository; commit `config/fund.yaml` (mandate and rules) and README skeleton | Rules committed before any return code |
-| 2. Data | Land STX40, `^J200.JO`, T-bill, constituent notices; staging; data quality flags (duplicate distributions, unit anomalies, gaps) | Flags visible in a data quality view; tests pass |
+| 2. Data | Land STX40, `^J200.JO`, T-bill, then constituents and member shares; staging; data quality flags (duplicate distributions, unit anomalies, gaps) | Benchmark, index and T-bill landed 30 Sep 2026 with checks ([data](data.md)); constituents and shares next |
 | 3. Fund book | Simulate decisions, trades, flows, dividends, fees and cash day by day; daily NAV and unit price; ledger | NAV reconciles to cash plus holdings every day |
 | 4. Returns and risk | TWR, MWR, benchmark total return, risk measures | Planted-error suite passes |
 | 5. Attribution | Contribution by holding; Brinson-Fachler by sector with Carino linking; benchmark rebuild reconciled to STX40 | Identity tests pass; rebuild gap reported |

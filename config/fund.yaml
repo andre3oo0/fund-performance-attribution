@@ -5,7 +5,7 @@ fund:
   synthetic: true
   type: South African general equity, long only, no borrowing, no derivatives
   currency: ZAR
-  inception_date: 2022-01-03  # a Monday; to be confirmed as a JSE trading day
+  inception_date: 2022-01-03  # a Monday and a JSE trading day (docs/sources.md)
   seed_capital_zar: 50000000
   launch_unit_price_zar: 10.00
 
@@ -28,7 +28,7 @@ rules:
   subscriptions: invested pro rata to current weights
   redemptions: funded by selling pro rata to current weights
   cash_rebalance: month-end only, back into the band
-  max_single_share: 0.10  # trimmed at the next rebalance; every breach is logged (to be checked against CISCA limits)
+  max_single_share: 0.10  # BN 90 of 2014 para 3(1)(a) for shares over R2bn; trimmed at the next rebalance, every breach logged
 
 costs:
   management_fee_annual: 0.0100  # accrued daily on NAV, paid monthly
@@ -42,5 +42,5 @@ investor_flows:
 
 assumptions:
   dividends: recognised on the ex-date; cash received five trading days later
-  dividend_withholding_tax: to be verified for a unit trust before use
+  dividend_withholding_tax: none at fund level; withheld from investors on distribution (docs/sources.md)
   cash_return: 91-day Treasury bill tender rate, SARB series MMRD203A

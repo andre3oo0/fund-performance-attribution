@@ -16,13 +16,22 @@ bill rate.
 
 ## Status
 
-Work in progress, started 30 September 2026. There are no findings yet. The plan, with the checks already
-made and the reasoning behind each decision, is in [docs/plan.md](docs/plan.md).
+Work in progress, started 30 September 2026. The fund's performance has not been measured yet. The plan,
+with the reasoning behind each decision, is in [docs/plan.md](docs/plan.md).
 
-Already found while planning: Yahoo's adjusted close for the Satrix 40 fund leaves out its distributions,
-and until October 2024 Yahoo lists most distributions two or three times. A benchmark taken from Yahoo at
-face value would be wrong in both directions, so here it is rebuilt and checked against Satrix's own
-notices.
+The benchmark, the Top 40 index and the Treasury bill rate are now collected and checked
+([docs/data.md](docs/data.md)). Before any performance figure, the checks found three problems a
+benchmark taken at face value would carry:
+
+- **Distributions counted up to three times.** Until October 2024, Yahoo lists each quarterly Satrix 40
+  distribution two or three times. The amounts match Satrix's own figures, but summing them as listed
+  would count two to three times the real income. Yahoo's adjusted close ignores them altogether.
+- **A price 100 times too small.** Satrix 40 closed at R0.84 on 25 April 2025, against R84.12 the day
+  before.
+- **A zero interest rate.** The Reserve Bank's Treasury bill series reads 0.00% for five days in February
+  2022, which would understate the risk-free return used to judge the fund's risk-adjusted performance.
+
+Every fact the fund's rules rely on is checked against a primary source in [docs/sources.md](docs/sources.md).
 
 ## Skills
 
