@@ -1,0 +1,13 @@
+# What is collected, from where, and from when.
+
+yahoo:
+  start: 2020-12-01  # twelve months of closes before the first decision on 3 January 2022
+  min_coverage: 0.95  # a mostly empty fetch fails instead of landing
+  instruments:
+    - { security_id: STX40, vendor_symbol: STX40.JO, role: benchmark, name: Satrix 40 }
+    - { security_id: J200, vendor_symbol: ^J200.JO, role: index, name: FTSE/JSE Top 40 price index }
+
+sarb:
+  series: MMRD203A  # Treasury bills, 91 day, tender rates
+  url: https://custom.resbank.co.za/SarbWebApi/WebIndicators/Shared/GetTimeseriesObservations/{series}/{start}/{end}
+  start: 2020-12-01

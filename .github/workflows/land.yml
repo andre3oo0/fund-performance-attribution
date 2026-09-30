@@ -1,0 +1,106 @@
+name: land
+
+# Collects the fund's market data, called from the private data repository so vendor data, logs and reports stay private.
+
+on:
+  workflow_call:
+    inputs:
+      refetch:
+        description: Replace today's files if they already exist
+        type: boolean
+        default: false
+      dry_run:
+        description: Fetch and check, but commit nothing
+        type: boolean
+        default: false
+      sources:
+        description: Comma-separated sources to fetch (yahoo, sarb); blank for all
+        type: string
+        default: ""
+
+jobs:
+  land:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Refuse to run from a public repository  # vendor data, logs and reports must not be public
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: test "$(gh api "repos/${{ github.repository }}" --jq .private)" = "true"
+
+      - name: Check out the code
+        uses: actions/checkout@v5
+        with:
+          repository: andre3oo0/fund-performance-attribution
+          ref: main
+
+      - name: Check out the calling data repository into data/landing
+        uses: actions/checkout@v5
+        with:
+          path: data/landing
+
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Test
+        run: python -m unittest discover -s tests -t . -v
+
+      - name: Verify files already landed  # rebuilding re-checks every landed file against its fingerprint
+        shell: bash
+        run: if [ -d data/landing/fund-performance-attribution ]; then python -m src.rebuild; fi
+
+      - name: Land  # inputs pass through env, so a crafted input cannot inject shell
+        shell: bash
+        env:
+          REFETCH: ${{ inputs.refetch && '--refetch' || '' }}
+          SOURCES: ${{ inputs.sources }}
+        run: |
+          args=()
+          for s in ${SOURCES//,/ }; do args+=(--source "$s"); done
+          python -m src.ingest "${args[@]}" $REFETCH 2>&1 | tee land.log
+
+      - name: Commit  # rebases onto any push made since checkout, so a concurrent run cannot lose files
+        if: ${{ !cancelled() && !inputs.dry_run }}
+        working-directory: data/landing
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add fund-performance-attribution
+          if git diff --cached --quiet; then
+            echo "Nothing new to commit."
+            exit 0
+          fi
+          landed=$(git diff --cached --name-only | cut -d/ -f2 | sort -u | paste -sd, -)
+          git commit -m "fund-performance-attribution $(TZ=Africa/Johannesburg date +%F): $landed"
+          for attempt in 1 2 3; do
+            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            sleep $((attempt * 10))
+          done
+          exit 1
+
+      - name: Rebuild and check
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          python -m src.rebuild 2>&1 | tee rebuild.log
+          python -m src.dq 2>&1 | tee dq.log
+
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Land"
+            echo '```'
+            cat land.log 2>/dev/null || echo "Land step did not run."
+            echo '```'
+            echo "### Data quality"
+            echo '```'
+            cat rebuild.log dq.log 2>/dev/null || echo "Checks did not run."
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
