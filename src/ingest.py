@@ -1,11 +1,11 @@
-"""Collect today's files from Yahoo and SARB and land them unchanged in the private data repository."""
+"""Collect files from Yahoo, SARB and Satrix and land them unchanged in the private data repository."""
 
 import argparse
 import sys
 from datetime import datetime
 
 from src import config, landing
-from src.sources import sarb, yahoo
+from src.sources import sarb, satrix, yahoo
 
 
 class IncompleteFetch(Exception):
@@ -44,7 +44,28 @@ def land_sarb(snapshot_date: str, refetch: bool, now: datetime) -> dict:
     return manifest
 
 
-LANDERS = {"yahoo": land_yahoo, "sarb": land_sarb}
+def land_satrix(snapshot_date: str, refetch: bool, now: datetime) -> dict:
+    settings = config.sources()["satrix"]
+    landed, skipped = 0, 0
+    # A published statement never changes, so each is landed once under its year-end, not the fetch date
+    for statement in settings["statements"]:
+        year_end = str(statement["year_end"])
+        if landing.landing_dir("satrix", year_end).joinpath(landing.MANIFEST_FILE).exists() and not refetch:
+            skipped += 1
+            continue
+        url = settings["url"].format(media_id=statement["media_id"])
+        payload = satrix.fetch(url)
+        landing.write("satrix", year_end, "statement.pdf.gz", payload, {
+            "url": url,
+            "media_id": statement["media_id"],
+            "year_end": year_end,
+            "rows": 1,
+        }, refetch=refetch, now=now)
+        landed += 1
+    return {"rows": landed, "session_cutoff": f"not applicable; {skipped} statements already landed"}
+
+
+LANDERS = {"yahoo": land_yahoo, "sarb": land_sarb, "satrix": land_satrix}
 
 
 def main(argv=None) -> int:

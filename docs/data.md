@@ -33,8 +33,10 @@ python -m src.dq
 | Yahoo Finance | Satrix 40 (`STX40.JO`), cents | 1 Dec 2020 | 1,452 daily bars to 28 Sep 2026 |
 | Yahoo Finance | FTSE/JSE Top 40 price index (`^J200.JO`), points | 1 Dec 2020 | 1,443 daily bars to 29 Sep 2026 |
 | SARB | 91-day T-bill tender rate (`MMRD203A`), percent | 1 Dec 2020 | 1,468 daily values to 28 Sep 2026 |
+| Satrix | Satrix 40 annual financial statements, PDF | Year-ends 2020 to 2025 | Four statements, landed once each under their year-end |
 
-The Top 40 member shares follow once the point-in-time constituent lists are in place.
+Satrix's statements are landed once each under their year-end (`satrix/2025-12-31/`), since a published
+statement does not change. The Top 40 member shares follow (44 of the 47 codes have Yahoo prices).
 
 ## The checks
 
@@ -50,10 +52,16 @@ uses the data decides what to do with each, and says so.
 | Missing session | A trading day inside a series' own date range with no bar |
 | Frozen price | Five or more sessions at exactly the same close |
 | Rate problem | More than ten days between published rates, or a rate at or below zero, or 30% and above |
+| Unmapped holding | A name in Satrix's statement with no JSE code for that year |
+| Statement total | A statement's holdings that do not add up to its stated total (R5 allowed for rounding) |
+| Industry total | Holdings grouped by each company's ICB industry that differ from Satrix's industry table (2021 onwards) |
+| Restated holding | The same year-end printed with different shares or value in two statements |
+| Year-end price | Satrix's year-end price against Yahoo's close on the last trading day of the year (0.1% allowed), or no Yahoo price at all |
 
 The tests plant each error and check it is found, and plant traps that must not raise an alarm: a quarterly
 distribution of a repeated amount, a share split, a public holiday, four frozen sessions, a weekend in the
-rate series.
+rate series, a year-end on a Saturday, a name that maps to different codes in different years, and 2020's
+old industry structure.
 
 ## What the checks found on the first landing (30 September 2026)
 
@@ -77,3 +85,23 @@ range, so a missing latest day is not yet flagged.
 
 Adjusted close is not used: Yahoo's adjusted close for Satrix 40 moves only from 0.9973 to 1.0 of the close
 over nearly five years, so it does not reflect the distributions.
+
+## What the Satrix statements showed (30 September 2026)
+
+**The year-end constituents are complete.** Every year-end from 2020 to 2025 lists 41 holdings (40
+companies, with Investec's two lines), all mapped to a JSE code; each year's holdings add up to Satrix's
+stated total, no year-end printed in two statements differs, and the weights sum to 100%.
+
+**Yahoo's closes are back-adjusted, so they cannot be multiplied by Satrix's share counts.** A preview
+against the Yahoo history already collected by jse-share-price-reconciliation (from 29 Sep 2021) matched
+180 of 205 year-end prices from 2021 to 2025 to within 0.1%. Most of the rest differ by one constant
+factor per share across every year-end before a later corporate action: Naspers -80% (a later share split),
+Prosus -54% to 2022, Mondi +10% to 2023, Anglo American -1.7% to 2024, and Investec (about -6.5%) and
+Remgro (-2%) at 2021. The reasons behind the factors are not yet verified. Returns from Yahoo stay
+consistent, but values do not, so benchmark weights are taken from Satrix's rand values and moved with
+returns, never from share counts times Yahoo prices.
+
+**Four benchmark members have no Yahoo prices for part of the period:** Richemont before 19 April 2023
+(16.2% of Satrix 40 at the end of 2021), BHP Group plc before 31 January 2022 (13.2%), MultiChoice
+throughout (1.0%, delisted December 2025) and Northam Platinum Ltd in 2020 (replaced by Northam Platinum
+Holdings in 2021).

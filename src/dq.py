@@ -13,6 +13,11 @@ CHECKS = [
     ("dq_missing_session", "Trading days with no price"),
     ("dq_stale_price", "Prices unchanged for five sessions or more"),
     ("dq_rate", "Gaps or implausible values in the T-bill rate"),
+    ("dq_statement_unmapped", "Satrix holdings with no JSE code mapped"),
+    ("dq_statement_total", "Satrix statements whose holdings do not add up to the stated total"),
+    ("dq_statement_industry", "ICB industry totals that differ from Satrix's (2021 onwards)"),
+    ("dq_statement_restated", "Year-end holdings printed differently in two statements"),
+    ("dq_statement_price", "Satrix year-end prices that Yahoo's close does not match"),
 ]
 
 

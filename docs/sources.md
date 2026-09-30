@@ -43,9 +43,16 @@ match neither the record date nor the payment date: unexplained.
   around. One notice has been read in full, through Sharenet's SENS display (March 2025: changes applied
   after the close on Thursday 20 March, effective Monday 24 March 2025; 42 code rows, 40 companies, weights
   before and after, no sector column).
-- Satrix's annual financial statements list every holding at 31 December with its percentage of the
-  portfolio (links above), a primary source for the year-end constituents.
-- Unresolved: a complete point-in-time constituent history for every quarter from December 2021.
+- Satrix's annual financial statements (note 3) list every holding at 31 December, with shares, price,
+  fair value in rand and percentage of the portfolio, for that year and the one before. Four statements
+  cover every year-end from 2020 to 2025: 2021 https://satrix.co.za/media/63515 (2021 and 2020), and the
+  2023, 2024 and 2025 statements above. They are landed as received and parsed on every rebuild
+  (`src/sources/satrix.py`); each year's holdings add up to the stated total to within R2 of rounding.
+- 47 names appear across the six year-ends, 41 holdings in each, mapped to 47 JSE codes in
+  `config/securities.yaml`. Two names change meaning over time: Satrix prints "BHP Group plc" both before
+  BHP unified its listings in January 2022 and after (mapped to two codes by year, the date unverified),
+  and its 2025 statement calls Valterra Platinum "Valterra Partners LLC".
+- Unresolved: the quarterly changes between year-ends, from Satrix's rebalance notices.
 
 ## Sector classification (ICB)
 
@@ -54,9 +61,17 @@ match neither the record date nor the payment date: unexplained.
 - FTSE Russell's free Top 40 factsheet gives the ICB supersector breakdown (count and weight of the index)
   and the ICB sector of the ten largest members:
   https://research.ftserussell.com/Analytics/FactSheets/Home/DownloadSingleIssue?openfile=open&issueName=J200
-- Satrix's financial statements give the fund's holdings by ICB industry in rand.
-- Unresolved: each company's classification, to be taken from its own reporting and checked against these
-  totals.
+- Satrix's financial statements give the fund's holdings by ICB industry, in rand, for each year-end.
+- **Each company's ICB industry is proven by matching those totals.** With the industries in
+  `config/securities.yaml`, the holdings add up to Satrix's printed total for every industry at every
+  year-end from 2021 to 2025, to within R2 of rounding (the check `dq_statement_industry` re-proves this on
+  every rebuild). First guesses that failed and were corrected by the totals: Remgro is Financials, not
+  Industrials; Exxaro is Energy, not Basic Materials; MultiChoice is Telecommunications, not Consumer
+  Discretionary.
+- Satrix's 2020 figures use the ICB structure before its 2021 revision (Consumer Goods and Consumer
+  Services), so they are not compared; the fund starts in 2022 and does not need them.
+- Limit: matching totals proves the industries add up, not that no two companies of equal value are
+  swapped. Across five year-ends and 11 industries that is very unlikely, but it is not a published list.
 
 ## Fund rules
 

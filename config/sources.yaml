@@ -11,3 +11,12 @@ sarb:
   series: MMRD203A  # Treasury bills, 91 day, tender rates
   url: https://custom.resbank.co.za/SarbWebApi/WebIndicators/Shared/GetTimeseriesObservations/{series}/{start}/{end}
   start: 2020-12-01
+
+# Satrix 40 annual financial statements; each lists every holding at its year-end and the year before
+satrix:
+  url: https://satrix.co.za/media/{media_id}
+  statements:
+    - { year_end: 2021-12-31, media_id: 63515 }
+    - { year_end: 2023-12-31, media_id: 88188 }
+    - { year_end: 2024-12-31, media_id: 90845 }
+    - { year_end: 2025-12-31, media_id: 92341 }

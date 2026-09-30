@@ -1,0 +1,61 @@
+# Every company Satrix 40 held at a year-end from 2020 to 2025, mapped from the name Satrix prints to its JSE code.
+# icb_industry: proven for 2021 to 2025 by matching Satrix's rand industry totals exactly (docs/sources.md).
+# satrix_names: the name in the statements; from/to limit a name to the year-ends it applies to.
+# No vendor_symbol: Yahoo returns no prices for the code, so the security cannot be priced from Yahoo.
+
+securities:
+  - { security_id: ABG, vendor_symbol: ABG.JO, name: Absa Group, icb_industry: Financials, satrix_names: [{ name: ABSA Group Ltd }] }
+  - { security_id: AGL, vendor_symbol: AGL.JO, name: Anglo American, icb_industry: Basic Materials, satrix_names: [{ name: Anglo American plc }] }
+  - { security_id: ANG, vendor_symbol: ANG.JO, name: AngloGold Ashanti, icb_industry: Basic Materials, satrix_names: [{ name: Anglogold Ashanti Ltd }] }
+  - { security_id: ANH, vendor_symbol: ANH.JO, name: Anheuser-Busch InBev, icb_industry: Consumer Staples, satrix_names: [{ name: Anheuser-Busch InBev }] }
+  - { security_id: APN, vendor_symbol: APN.JO, name: Aspen Pharmacare, icb_industry: Health Care, satrix_names: [{ name: Aspen Ltd }] }
+  - { security_id: BHP, name: BHP Group plc, icb_industry: Basic Materials, satrix_names: [{ name: BHP Group plc, to: 2021 }],
+      note: "JSE line of BHP Group plc until BHP unified its listings in January 2022 (unverified); no Yahoo prices" }
+  - { security_id: BHG, vendor_symbol: BHG.JO, name: BHP Group, icb_industry: Basic Materials, satrix_names: [{ name: BHP Group plc, from: 2022 }],
+      note: "Satrix still prints BHP Group plc after unification; Yahoo prices start 31 Jan 2022" }
+  - { security_id: BID, vendor_symbol: BID.JO, name: Bid Corporation, icb_industry: Consumer Staples, satrix_names: [{ name: BID Corporation Ltd }] }
+  - { security_id: BVT, vendor_symbol: BVT.JO, name: Bidvest Group, icb_industry: Industrials, satrix_names: [{ name: Bidvest Ltd }] }
+  - { security_id: BTI, vendor_symbol: BTI.JO, name: British American Tobacco, icb_industry: Consumer Staples, satrix_names: [{ name: British American Tobacco plc }] }
+  - { security_id: CPI, vendor_symbol: CPI.JO, name: Capitec Bank, icb_industry: Financials, satrix_names: [{ name: Capitec Bank Holdings Ltd }] }
+  - { security_id: CLS, vendor_symbol: CLS.JO, name: Clicks Group, icb_industry: Consumer Staples, satrix_names: [{ name: Clicks Group Ltd }] }
+  - { security_id: CFR, vendor_symbol: CFR.JO, name: Richemont, icb_industry: Consumer Discretionary, satrix_names: [{ name: Compagnie Fin Richemont Ltd }],
+      note: "Yahoo prices start 19 Apr 2023; Satrix's share count fell from 7.9 million to 0.1 million over the period, so the JSE instrument changed (unverified)" }
+  - { security_id: DSY, vendor_symbol: DSY.JO, name: Discovery, icb_industry: Financials, satrix_names: [{ name: Discovery Ltd }] }
+  - { security_id: EXX, vendor_symbol: EXX.JO, name: Exxaro Resources, icb_industry: Energy, satrix_names: [{ name: Exxaro Resources Ltd }] }
+  - { security_id: FSR, vendor_symbol: FSR.JO, name: FirstRand, icb_industry: Financials, satrix_names: [{ name: FirstRand Ltd }] }
+  - { security_id: GLN, vendor_symbol: GLN.JO, name: Glencore, icb_industry: Basic Materials, satrix_names: [{ name: Glencore plc }] }
+  - { security_id: GFI, vendor_symbol: GFI.JO, name: Gold Fields, icb_industry: Basic Materials, satrix_names: [{ name: Gold Fields Ltd }] }
+  - { security_id: GRT, vendor_symbol: GRT.JO, name: Growthpoint Properties, icb_industry: Real Estate, satrix_names: [{ name: Growthpoint Prop Ltd }] }
+  - { security_id: HAR, vendor_symbol: HAR.JO, name: Harmony Gold, icb_industry: Basic Materials, satrix_names: [{ name: Harmony Gold Mining Company Ltd }] }
+  - { security_id: IMP, vendor_symbol: IMP.JO, name: Impala Platinum, icb_industry: Basic Materials, satrix_names: [{ name: Impala Platinum Holdings Ltd }] }
+  - { security_id: INL, vendor_symbol: INL.JO, name: Investec Ltd, icb_industry: Financials, satrix_names: [{ name: Investec Ltd }] }
+  - { security_id: INP, vendor_symbol: INP.JO, name: Investec plc, icb_industry: Financials, satrix_names: [{ name: Investec plc }] }
+  - { security_id: MCG, name: MultiChoice Group, icb_industry: Telecommunications, satrix_names: [{ name: MultiChoice Group Ltd }],
+      note: "Delisted 10 Dec 2025 after the Canal+ takeover; Yahoo returns no prices for MCG.JO" }
+  - { security_id: MNP, vendor_symbol: MNP.JO, name: Mondi, icb_industry: Industrials, satrix_names: [{ name: Mondi plc }] }
+  - { security_id: MRP, vendor_symbol: MRP.JO, name: Mr Price Group, icb_industry: Consumer Discretionary, satrix_names: [{ name: Mr Price Group Ltd }] }
+  - { security_id: MTN, vendor_symbol: MTN.JO, name: MTN Group, icb_industry: Telecommunications, satrix_names: [{ name: MTN Group Ltd }] }
+  - { security_id: NED, vendor_symbol: NED.JO, name: Nedbank Group, icb_industry: Financials, satrix_names: [{ name: Nedbank Group Ltd }] }
+  - { security_id: NHM, name: Northam Platinum Ltd, icb_industry: Basic Materials, satrix_names: [{ name: Northam Platinum Ltd }],
+      note: "Replaced on the JSE by Northam Platinum Holdings (NPH) in 2021 (code and date unverified); no Yahoo prices" }
+  - { security_id: NPH, vendor_symbol: NPH.JO, name: Northam Platinum Holdings, icb_industry: Basic Materials, satrix_names: [{ name: Northam Platinum Holdings Ltd }],
+      note: "Yahoo prices start 16 Sep 2021" }
+  - { security_id: NPN, vendor_symbol: NPN.JO, name: Naspers, icb_industry: Technology, satrix_names: [{ name: Naspers Ltd }] }
+  - { security_id: NRP, vendor_symbol: NRP.JO, name: NEPI Rockcastle, icb_industry: Real Estate, satrix_names: [{ name: NEPI Rockcastle plc }] }
+  - { security_id: OMU, vendor_symbol: OMU.JO, name: Old Mutual, icb_industry: Financials, satrix_names: [{ name: Old Mutual Ltd }] }
+  - { security_id: OUT, vendor_symbol: OUT.JO, name: OUTsurance Group, icb_industry: Financials, satrix_names: [{ name: OUTsurance Group Ltd }] }
+  - { security_id: PPH, vendor_symbol: PPH.JO, name: Pepkor, icb_industry: Consumer Discretionary, satrix_names: [{ name: Pepkor Holdings Ltd }] }
+  - { security_id: PRX, vendor_symbol: PRX.JO, name: Prosus, icb_industry: Technology, satrix_names: [{ name: Prosus NV }] }
+  - { security_id: REM, vendor_symbol: REM.JO, name: Remgro, icb_industry: Financials, satrix_names: [{ name: Remgro Ltd }] }
+  - { security_id: RNI, vendor_symbol: RNI.JO, name: Reinet Investments, icb_industry: Financials, satrix_names: [{ name: Reinet Investments SCA }] }
+  - { security_id: SLM, vendor_symbol: SLM.JO, name: Sanlam, icb_industry: Financials, satrix_names: [{ name: Sanlam Ltd }] }
+  - { security_id: SOL, vendor_symbol: SOL.JO, name: Sasol, icb_industry: Basic Materials, satrix_names: [{ name: Sasol Ltd }] }
+  - { security_id: SHP, vendor_symbol: SHP.JO, name: Shoprite, icb_industry: Consumer Staples, satrix_names: [{ name: Shoprite Holdings Ltd }] }
+  - { security_id: SSW, vendor_symbol: SSW.JO, name: Sibanye-Stillwater, icb_industry: Basic Materials, satrix_names: [{ name: Sibanye Still Water Ltd }] }
+  - { security_id: SBK, vendor_symbol: SBK.JO, name: Standard Bank Group, icb_industry: Financials, satrix_names: [{ name: Standard Bank Group Ltd }] }
+  - { security_id: SPP, vendor_symbol: SPP.JO, name: SPAR Group, icb_industry: Consumer Staples, satrix_names: [{ name: The Spar Group }] }
+  - { security_id: VAL, vendor_symbol: VAL.JO, name: Valterra Platinum, icb_industry: Basic Materials,
+      satrix_names: [{ name: Anglo American Platinum Ltd, to: 2024 }, { name: Valterra Partners LLC, from: 2025 }],
+      note: "Formerly Anglo American Platinum (AMS); Satrix's 2025 statement misnames it Valterra Partners LLC" }
+  - { security_id: VOD, vendor_symbol: VOD.JO, name: Vodacom Group, icb_industry: Telecommunications, satrix_names: [{ name: Vodacom Group Ltd }] }
+  - { security_id: WHL, vendor_symbol: WHL.JO, name: Woolworths, icb_industry: Consumer Discretionary, satrix_names: [{ name: Woolworths Holdings Ltd }] }

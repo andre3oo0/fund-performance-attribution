@@ -31,6 +31,17 @@ benchmark taken at face value would carry:
 - **A zero interest rate.** The Reserve Bank's Treasury bill series reads 0.00% for five days in February
   2022, which would understate the risk-free return used to judge the fund's risk-adjusted performance.
 
+The benchmark's members at every year-end from 2020 to 2025 now come from Satrix 40's own audited
+financial statements, and each company's industry is proven by matching Satrix's industry totals to the
+rand. Comparing Satrix's year-end prices with Yahoo's showed two more problems:
+
+- **Yahoo rewrites old prices after corporate actions.** Naspers' closes before its later share split are
+  shown at a fifth of what they were; five other shares carry smaller adjustments. Returns stay right, but
+  a holding valued from Yahoo's old prices would be wrong, so the benchmark's weights are taken from
+  Satrix's rand values instead.
+- **Some members have no Yahoo history for part of the period**, including Richemont before April 2023,
+  16% of the index at the end of 2021.
+
 Every fact the fund's rules rely on is checked against a primary source in [docs/sources.md](docs/sources.md).
 
 ## Skills

@@ -14,7 +14,7 @@ on:
         type: boolean
         default: false
       sources:
-        description: Comma-separated sources to fetch (yahoo, sarb); blank for all
+        description: Comma-separated sources to fetch (yahoo, sarb, satrix); blank for all
         type: string
         default: ""
 

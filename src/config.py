@@ -22,8 +22,10 @@ def sources() -> dict:
     return load_yaml("sources.yaml")
 
 
+def securities() -> list[dict]:
+    return load_yaml("securities.yaml")["securities"]
+
+
 def instruments() -> list[dict]:
-    listed = list(sources()["yahoo"]["instruments"])
-    if (CONFIG_DIR / "securities.yaml").exists():
-        listed += load_yaml("securities.yaml").get("securities") or []
-    return listed
+    shares = [{**s, "role": "share"} for s in securities() if s.get("vendor_symbol")]
+    return list(sources()["yahoo"]["instruments"]) + shares

@@ -75,3 +75,26 @@ SELECT r.series, r.snapshot_date, r.period AS rate_date, r.value_pct,
 FROM raw_rate r
 JOIN latest l USING (series, snapshot_date)
 LEFT JOIN trading_calendar c ON c.cal_date = r.period;
+
+-- Benchmark holdings at each year-end, from the statement for that year where there is one, else the next year's
+DROP TABLE IF EXISTS stg_benchmark_holding;
+CREATE TABLE stg_benchmark_holding AS
+WITH chosen AS (
+    SELECT as_at_year, MIN(CASE WHEN statement_year = as_at_year THEN 0 ELSE 1 END) AS pref
+    FROM raw_statement_total
+    GROUP BY 1
+),
+source AS (
+    SELECT t.as_at_year, t.statement_year, t.total_zar
+    FROM raw_statement_total t
+    JOIN chosen c ON c.as_at_year = t.as_at_year
+     AND (CASE WHEN t.statement_year = t.as_at_year THEN 0 ELSE 1 END) = c.pref
+)
+SELECT h.as_at_year, h.as_at_year || '-12-31' AS as_at_date, h.statement_year, h.satrix_name,
+       a.security_id, s.icb_industry, h.shares, h.price_zar, h.fair_value_zar,
+       h.fair_value_zar / src.total_zar AS weight,  -- from rands; the printed weight is rounded to 0.1%
+       h.weight_printed
+FROM raw_statement_holding h
+JOIN source src ON src.as_at_year = h.as_at_year AND src.statement_year = h.statement_year
+LEFT JOIN security_alias a ON a.satrix_name = h.satrix_name AND h.as_at_year BETWEEN a.from_year AND a.to_year
+LEFT JOIN security s ON s.security_id = a.security_id;

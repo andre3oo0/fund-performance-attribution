@@ -4,3 +4,5 @@ pyyaml>=6.0
 openpyxl>=3.1
 requests>=2.31
 truststore>=0.9
+pypdf>=6.0
+cryptography>=42  # pypdf needs it to open the 2021 statement, which is AES-encrypted with no password

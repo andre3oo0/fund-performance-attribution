@@ -7,7 +7,7 @@ import sys
 import pandas as pd
 
 from src import config, db, landing, trading_calendar
-from src.sources import sarb, yahoo
+from src.sources import sarb, satrix, yahoo
 
 
 def load_instruments(conn: sqlite3.Connection) -> None:
@@ -15,6 +15,33 @@ def load_instruments(conn: sqlite3.Connection) -> None:
     with conn:
         conn.execute("DELETE FROM instrument")
         conn.executemany("INSERT INTO instrument VALUES (?, ?, ?, ?)", rows)
+
+
+def load_securities(conn: sqlite3.Connection) -> None:
+    listed = config.securities()
+    aliases = [(a["name"], s["security_id"], a.get("from", 1900), a.get("to", 9999))
+               for s in listed for a in s["satrix_names"]]
+    with conn:
+        conn.execute("DELETE FROM security_alias")
+        conn.execute("DELETE FROM security")
+        conn.executemany("INSERT INTO security VALUES (?, ?, ?, ?, ?)",
+                         [(s["security_id"], s["name"], s.get("vendor_symbol"), s["icb_industry"], s.get("note"))
+                          for s in listed])
+        conn.executemany("INSERT INTO security_alias VALUES (?, ?, ?, ?)", aliases)
+
+
+def load_statement(conn: sqlite3.Connection, payload: bytes, run_id: str) -> int:
+    parsed = satrix.parse(payload)
+    year = parsed["year"]
+    conn.executemany("INSERT INTO raw_statement_holding VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                     [(year, h["year"], h["name"], h["shares"], h["price"], h["fair_value"], h["weight"], run_id)
+                      for h in parsed["holdings"]])
+    conn.executemany("INSERT INTO raw_statement_total VALUES (?, ?, ?, ?)",
+                     [(year, as_at, total, run_id) for as_at, total in parsed["totals"].items()])
+    conn.executemany("INSERT INTO raw_statement_industry VALUES (?, ?, ?, ?, ?)",
+                     [(year, as_at, industry, value, run_id)
+                      for industry, by_year in parsed["sectors"].items() for as_at, value in by_year.items()])
+    return len(parsed["holdings"])
 
 
 def record_run(conn: sqlite3.Connection, manifest: dict, rows: int, path) -> None:
@@ -47,6 +74,8 @@ def load_file(conn: sqlite3.Connection, manifest_path) -> int:
             conn.executemany("INSERT INTO raw_rate VALUES (?, ?, ?, ?, ?, ?)",
                              [(source, snap, manifest["series"], o["period"], o["value"], run_id) for o in obs])
             rows = len(obs)
+        elif source == "satrix":
+            rows = load_statement(conn, payload, run_id)
         else:
             raise ValueError(f"No loader for source {source!r} in {manifest_path}")
         record_run(conn, manifest, rows, manifest_path.parent / manifest["file"])
@@ -62,6 +91,7 @@ def rebuild(conn: sqlite3.Connection) -> int:
     db.apply_schema(conn)
     trading_calendar.load(conn)
     load_instruments(conn)
+    load_securities(conn)
     found = landing.manifests()
     total = sum(load_file(conn, m) for m in found)
     build_derived(conn)
