@@ -92,14 +92,19 @@ over nearly five years, so it does not reflect the distributions.
 companies, with Investec's two lines), all mapped to a JSE code; each year's holdings add up to Satrix's
 stated total, no year-end printed in two statements differs, and the weights sum to 100%.
 
-**Yahoo's closes are back-adjusted, so they cannot be multiplied by Satrix's share counts.** A preview
-against the Yahoo history already collected by jse-share-price-reconciliation (from 29 Sep 2021) matched
-180 of 205 year-end prices from 2021 to 2025 to within 0.1%. Most of the rest differ by one constant
-factor per share across every year-end before a later corporate action: Naspers -80% (a later share split),
-Prosus -54% to 2022, Mondi +10% to 2023, Anglo American -1.7% to 2024, and Investec (about -6.5%) and
-Remgro (-2%) at 2021. The reasons behind the factors are not yet verified. Returns from Yahoo stay
-consistent, but values do not, so benchmark weights are taken from Satrix's rand values and moved with
-returns, never from share counts times Yahoo prices.
+**Yahoo's closes are back-adjusted, so they cannot be multiplied by Satrix's share counts.** With every
+member's Yahoo history landed from 1 December 2020 (all 44 symbols returned data), 213 of Satrix's 246
+year-end prices from 2020 to 2025 match Yahoo's close to within 0.1%. Twenty differ by one constant factor
+per share across every year-end before a later corporate action: Naspers -80% (a later share split),
+Prosus -54% to 2022, Mondi +10% to 2023, Anglo American -1.7% to 2024 (-2.1% in 2020), Investec Ltd
+-6.3% and Investec plc -6.9% to 2021, and Remgro -2.0% to 2021. Old Mutual differs once, by -14.4% at
+the end of 2020. The reasons behind the factors are not yet verified. Returns from Yahoo stay consistent,
+but values do not, so benchmark weights are taken from Satrix's rand values and moved with returns,
+never from share counts times Yahoo prices. The other 13 have no Yahoo price at all (below).
+
+**The 100x price errors reach the member shares.** Six closes are 100 times too small, all on 10 January
+and 25 April 2025, the days jse-share-price-reconciliation found: Pepkor, Sanlam and Vodacom on 10 January;
+AB InBev, Standard Bank and Satrix 40 on 25 April.
 
 **Four benchmark members have no Yahoo prices for part of the period:** Richemont before 19 April 2023
 (16.2% of Satrix 40 at the end of 2021), BHP Group plc before 31 January 2022 (13.2%), MultiChoice
