@@ -21,6 +21,22 @@ class ParserTest(unittest.TestCase):
         self.assertEqual((notice["effective_date"], notice["applied_after"]), ("2025-03-24", "2025-03-21"))
         self.assertEqual(notice["printed_totals"], (1.0, 1.0))
 
+    def test_the_real_layout_quirks_are_read(self):
+        # From the September 2023 and September 2024 notices: a row wrapped over three lines, lower-case
+        # "JSE code", a date broken across a line, and Satrix's misplaced comma
+        text = "\n".join([
+            "JSE code: STX40", "Code Share", "   ", "  New Weight", "Previous", "Weight",
+            "ABG Barclays Africa (ABSA) 2.40% 2.61%", "PRX Prosus N.V          ", "3.99% ", "      ", "3.85% ",
+            "HAR Harmony Gold Mining 0.00% 0.84%", "WHL Woolworths Holdings Ltd  93.61% 92.70% ", "  100.00% 100.00% ",
+            "HAR Harmony Gold Mining 0.00% 0.84%",
+            "These changes were applied after the close of business on Friday, 20 ",
+            "September 2024 and are effective from , Thursday 26 September 2024. ",
+        ])
+        notice = satrix_sens.parse_text(text)
+        self.assertEqual([(c["code"], c["previous"], c["new"]) for c in notice["constituents"]],
+                         [("ABG", 0.024, 0.0261), ("PRX", 0.0399, 0.0385), ("HAR", 0.0, 0.0084), ("WHL", 0.9361, 0.927)])
+        self.assertEqual((notice["effective_date"], notice["applied_after"]), ("2024-09-26", "2024-09-20"))
+
     def test_another_satrix_funds_notice_is_refused(self):
         with self.assertRaises(satrix_sens.NotSatrix40):
             satrix_sens.parse_text(notice_text("2025-03-24", MEMBERS, jse_code="STXSWX"))

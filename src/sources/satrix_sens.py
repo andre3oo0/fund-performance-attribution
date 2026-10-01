@@ -8,8 +8,10 @@ from pathlib import Path
 from pypdf import PdfReader
 
 FILE_NAME = re.compile(r"SENS_(\d{8})_(S\d+)\.pdf$", re.I)
-ROW = re.compile(r"^\s*([A-Z0-9]{2,5})\s+(.+?)\s+(\d{1,3}\.\d{2})%\s+(\d{1,3}\.\d{2})%\s*$")
-TOTAL = re.compile(r"^\s*(\d{1,3}\.\d{2})%\s+(\d{1,3}\.\d{2})%\s*$")
+# A row's weights can wrap onto the next lines (Prosus in September 2023), so rows are matched across line breaks
+ROW = re.compile(r"^\s*([A-Z0-9]{2,5})\s+([^%\n]+?)\s+(\d{1,3}\.\d{2})%\s+(\d{1,3}\.\d{2})%", re.M)
+# Both totals on one line; a wrapped row can leave two weights on lines of their own
+TOTAL = re.compile(r"^[ \t]*(\d{1,3}\.\d{2})%[ \t]+(\d{1,3}\.\d{2})%[ \t]*$", re.M)
 DATE = r"(\d{1,2} [A-Z][a-z]+ \d{4})"
 
 
@@ -36,25 +38,30 @@ def iso(text: str) -> str:
     return datetime.strptime(text, "%d %B %Y").date().isoformat()
 
 
+def weight(text: str) -> float:
+    return round(float(text) / 100, 6)
+
+
 def parse_text(text: str) -> dict:
-    code = re.search(r"JSE Code:\s*([A-Z0-9]+)", text)
+    code = re.search(r"JSE code:\s*([A-Z0-9]+)", text, re.I)
     if not code or code.group(1) != "STX40":
         raise NotSatrix40(f"JSE code {code.group(1) if code else 'missing'}, not STX40")
-    effective = re.search(rf"effective\s+from\s+\w+,\s*{DATE}", text, re.I)
-    applied = re.search(rf"after\s+the\s+close\s+of\s+business\s+on\s+\w+,\s*{DATE}", text, re.I)
+    flat = " ".join(text.split())  # dates can break across lines
+    # Satrix sometimes misplaces the comma: "effective from , Thursday 26 September 2024"
+    effective = re.search(rf"effective\s+from\s*,?\s*\w+,?\s*{DATE}", flat, re.I)
+    applied = re.search(rf"after\s+the\s+close\s+of\s+business\s+on\s+\w+,?\s*{DATE}", flat, re.I)
     if not effective:
         raise UnparsedNotice("no effective date found")
-    rows, totals = [], None
-    for line in text.splitlines():
-        if totals is None and (row := ROW.match(line)):
-            rows.append({"code": row.group(1), "name": row.group(2).strip(),
-                         "previous": round(float(row.group(3)) / 100, 6), "new": round(float(row.group(4)) / 100, 6)})
-        elif totals is None and rows and (total := TOTAL.match(line)):
-            totals = (round(float(total.group(1)) / 100, 6), round(float(total.group(2)) / 100, 6))  # the main table ends at its totals
-    if not rows or totals is None:
-        raise UnparsedNotice("no constituent table with totals found")
+    total = TOTAL.search(text)  # the main table ends at its totals; the added and removed lists follow
+    if not total:
+        raise UnparsedNotice("no totals line found")
+    # Columns are previous then new, as the added and removed lists confirm
+    rows = [{"code": r.group(1), "name": r.group(2).strip(), "previous": weight(r.group(3)), "new": weight(r.group(4))}
+            for r in ROW.finditer(text[:total.start()])]
+    if not rows:
+        raise UnparsedNotice("no constituent table found")
     return {"effective_date": iso(effective.group(1)), "applied_after": iso(applied.group(1)) if applied else None,
-            "constituents": rows, "printed_totals": totals}
+            "constituents": rows, "printed_totals": (weight(total.group(1)), weight(total.group(2)))}
 
 
 def parse(pdf: bytes) -> dict:

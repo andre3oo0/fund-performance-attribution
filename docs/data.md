@@ -166,3 +166,24 @@ Only files headed "JSE Code: STX40" are landed, under their SENS date and number
 funds from the same day are reported and left out. Each manifest records the JSE link and that the file was
 saved by hand. Two independent primary sources then check each other: the members the notices give at each
 year-end must be the members in Satrix's audited financial statements.
+
+### What the first notices showed (1 October 2026)
+
+Seven Satrix 40 notices are landed: March and December 2022, March, September and December 2023, and March
+and September 2024. Every code maps to a security and every table adds up to the printed 100.00%.
+
+- **The two primary sources agree.** At the end of 2022 and 2023, the members the notices give are exactly
+  the members in Satrix's audited financial statements.
+- **The 2024 and 2025 year-ends differ only where notices are missing.** The last notice landed is September
+  2024; the audited holdings show Outsurance in and Northam Platinum out at the end of 2024, the December 2024
+  change, and the 2025 changes are not yet landed. These are flagged, not filled in.
+- **Twelve quarters have no notice yet:** June and September 2022, June 2023, June and December 2024, and
+  every quarter from March 2025. Membership continuity is checked between consecutive landed notices, so
+  across those gaps it proves less.
+- **A date to verify:** the September 2024 notice says the changes were applied after the close on Friday
+  20 September and are effective from Thursday 26 September 2024, although Monday 23 September was a
+  trading day. It is stored as printed; it may be a misprint for Monday 23 September (unverified).
+
+Reading the real PDFs needed three fixes, each now tested: "JSE code" is in lower case, a row's weights can
+wrap onto lines of their own (Prosus in September 2023), and Satrix sometimes writes "effective from ,
+Thursday 26 September 2024".
